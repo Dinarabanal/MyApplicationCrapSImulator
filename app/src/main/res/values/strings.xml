@@ -1,0 +1,11 @@
+<resources>
+  <string name="app_name">My ApplicationCrap Simulator</string>
+  <string name="next_game">next_game</string>
+  <string name="play_fast">play_fast</string>
+  <string name="pause">pause</string>
+  <string name="reset">reset</string>
+<string name="wins_format"> Wins: %,d</string>
+  <string name="losses_format"> Losses: %,d</string>
+  <string name="percentage_format"> %.2f%%</string>
+
+</resources>
