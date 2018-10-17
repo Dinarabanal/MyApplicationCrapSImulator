@@ -1,4 +1,4 @@
-package edu.cnm.deepdive.myapplicationcrapsimulator;
+package edu.cnm.deepdive.myapplicationcrapsimulator.controller;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -7,9 +7,10 @@ import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-
+import edu.cnm.deepdive.myapplicationcrapsimulator.R;
 import edu.cnm.deepdive.myapplicationcrapsimulator.model.Game;
 import edu.cnm.deepdive.myapplicationcrapsimulator.model.Game.Roll;
+import edu.cnm.deepdive.myapplicationcrapsimulator.view.RollAdapter;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.Random;
@@ -26,20 +27,21 @@ public class MainActivity extends AppCompatActivity {
   private TextView percentage;
   private ListView rolls;
   private Thread runner;
-
+  private RollAdapter adapter;
   private boolean running;
-
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     Random rng = new SecureRandom();
+    adapter = new RollAdapter(this);
     game = new Game(rng);
     wins = findViewById(R.id.wins);
     losses = findViewById(R.id.losses);
     percentage = findViewById(R.id.percentage);
     rolls = findViewById(R.id.rolls);
+    rolls.setAdapter(adapter);
     updateTally(0, 0);
   }
 
@@ -52,12 +54,12 @@ public class MainActivity extends AppCompatActivity {
     pause = menu.findItem(R.id.pause);
     reset = menu.findItem(R.id.reset);
     return true;
-
   }
 
   @Override
   public boolean onPrepareOptionsMenu(Menu menu) {
     super.onPrepareOptionsMenu(menu);
+    // TODO IDeally, we should only setVisible(false) if on action bar.
     next.setEnabled(!running);
     next.setVisible(!running);
     fast.setEnabled(!running);
@@ -65,10 +67,8 @@ public class MainActivity extends AppCompatActivity {
     pause.setEnabled(running);
     pause.setVisible(running);
     reset.setEnabled(!running);
-    reset.setVisible(!running);
+    // reset.setVisible(!running);
     return true;
-
-
   }
 
   @Override
@@ -95,7 +95,6 @@ public class MainActivity extends AppCompatActivity {
         handled = super.onOptionsItemSelected(item);
     }
     return handled;
-
   }
 
   private void updateTally(int wins, int losses) {
@@ -107,26 +106,23 @@ public class MainActivity extends AppCompatActivity {
   }
 
   private void updateRolls(List<Roll> rolls) {
-    ArrayAdapter<Roll> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,
-        rolls);
-    this.rolls.setAdapter(adapter);
+    adapter.clear();
+    adapter.addAll(rolls);
   }
 
   private void runFast(boolean start) {
     running = start;
     if (start) {
       invalidateOptionsMenu();
-      runner = new Runner();
-      runner.start();
+      new Runner().start();
     } else {
       runner = null;
     }
-
   }
 
   private class Runner extends Thread {
 
-    private static final int TALLY_UPDATE_INTERVAL = 1000;
+    private static final int TALLY_UPDATE_INTERVAL = 1_000;
     private static final int ROLLS_UPDATE_INTERVAL = 10_000;
 
     @Override
@@ -146,16 +142,16 @@ public class MainActivity extends AppCompatActivity {
         }
       }
       runOnUiThread(() -> {
-        int wins = game.getWins();
-        int losses = game.getLosses();
-        List<Roll> rolls = game.getRolls();
-        updateRolls(rolls);
-        updateTally(wins,losses);
-
+            int wins = game.getWins();
+            int losses = game.getLosses();
+            List<Roll> rolls = game.getRolls();
+            updateTally(wins, losses);
+            updateRolls(rolls);
             invalidateOptionsMenu();
           }
       );
     }
-  }
-}
 
+  }
+
+}
